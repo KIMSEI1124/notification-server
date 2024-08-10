@@ -30,7 +30,6 @@ class NotificationServiceImpl(
                 timeout = TIME_OUT_MILLISECONDS
             ),
             memberId,
-            sseEmitter
         )
     }
 
@@ -54,9 +53,9 @@ class NotificationServiceImpl(
 
     fun sendMessage(
         message: NotificationSendable,
-        memberId: Int,
-        sseEmitter: SseEmitter
+        memberId: Int
     ): SseEmitter {
+        val sseEmitter = sseEmitterRepository.findByMemberId(memberId)
         try {
             sseEmitter.send(
                 SseEmitter.event()

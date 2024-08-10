@@ -1,8 +1,9 @@
 package com.wypl.notification.schedule
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.wypl.notification.schedule.message.ScheduleKafkaConsumerMessageType
-import com.wypl.notification.schedule.message.WriteScheduleReviewMessage
+import com.wypl.notification.schedule.event.ScheduleKafkaConsumerEventType
+import com.wypl.notification.schedule.event.WriteScheduleReviewEvent
+import com.wypl.notification.schedule.service.ScheduleService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.KafkaHeaders
@@ -14,17 +15,18 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class ScheduleKafkaConsumer(
-    val objectMapper: ObjectMapper
+    val objectMapper: ObjectMapper,
+    val scheduleService: ScheduleService
 ) {
     @KafkaListener(topics = ["schedule"], groupId = "wypl-notification-group")
     fun listenScheduleMessage(
         @Payload message: String,
-        @Header(KafkaHeaders.RECEIVED_KEY) key: ScheduleKafkaConsumerMessageType
+        @Header(KafkaHeaders.RECEIVED_KEY) key: ScheduleKafkaConsumerEventType
     ) {
         when (key) {
-            ScheduleKafkaConsumerMessageType.WRITE_REVIEW -> {
-                val writeReviewMessage = objectMapper.readValue(message, WriteScheduleReviewMessage::class.java)
-                logger.info { "REVIEW: $writeReviewMessage" }
+            ScheduleKafkaConsumerEventType.WRITE_REVIEW -> {
+                val writeReviewMessage = objectMapper.readValue(message, WriteScheduleReviewEvent::class.java)
+                scheduleService.processByWriteScheduleReviewEvent(writeReviewMessage)
             }
         }
     }

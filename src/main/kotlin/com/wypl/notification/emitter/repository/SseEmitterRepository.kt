@@ -13,8 +13,12 @@ class SseEmitterRepository(
         return sse
     }
 
-    fun findByMemberId(memberId: Int): SseEmitter? {
-        return emitters[memberId]
+    fun findByMemberId(memberId: Int): SseEmitter {
+        val sseEmitter = emitters[memberId]
+        if (sseEmitter != null) {
+            return sseEmitter
+        }
+        throw NoSuchElementException()  // 로그인을 안 한 경우
     }
 
     fun deleteById(memberId: Int) {
