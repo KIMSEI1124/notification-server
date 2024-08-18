@@ -1,10 +1,7 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
+    id("java")
     id("org.springframework.boot") version "3.2.5"
     id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "1.9.23"
-    kotlin("plugin.spring") version "1.9.23"
     id("com.epages.restdocs-api-spec") version "0.18.4"
     id("jacoco")
 }
@@ -14,7 +11,9 @@ group = "com.wypl"
 version = projectVersion
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 jacoco {
@@ -28,12 +27,6 @@ repositories {
 }
 
 dependencies {
-    /* Kotlin */
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-
     /* Spring Boot */
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -57,13 +50,6 @@ dependencies {
 
     /* ETC */
     implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
-        jvmTarget = "17"
-    }
 }
 
 tasks.withType<Test> {
@@ -133,6 +119,9 @@ openapi3 {
 }
 
 tasks.register<Copy>("copyOasToSwagger") {
+    description = "생성된 API 문서를 Static 폴더로 복사합니다."
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+
     dependsOn(tasks.named("openapi3"))
 
     delete(file("src/main/resources/static/swagger-ui/openapi3.yaml"))
